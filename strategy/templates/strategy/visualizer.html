@@ -1,0 +1,170 @@
+{% extends 'authenticate/base.html' %}
+{% block content %}
+{% load static %}
+<html>
+    <head>
+        <link rel='stylesheet' type='text/css' href='{% static reset.css %}'/>
+        <script src='{% static 'jquery.js' %}'></script>
+        <script src='{% static battle %}'></script>
+        <style>
+            .gamefield {
+                display: inline-block;
+                position: relative;;
+            }
+            .gamefield .popup {
+                height: 20%;
+                top: 40%;
+                width: 50%;
+                left: 25%;
+                position: absolute;
+                margin: 0 auto;
+                background-color: rgba(0, 0, 0, 0.5);
+                text-align: center;
+            }
+            .gamefield .popup .inside {
+                top: 50%;
+                transform: translateY(-50%);
+                position: relative;
+                text-align: center;
+            }
+            .gamefield .popup .inside a,
+            .gamefield .popup .inside a:visited,
+            .gamefield .popup .inside a:focus,
+            .gamefield .popup .inside a:hover {
+                cursor: default;;
+                color: white;
+                font-size: x-large;
+                text-decoration: none;
+                font-weight: bold;;
+            }
+            .gamefield .popup.replay {
+                display: none;
+            }
+            .gamefield .head {
+                font-size: x-large;
+            }
+            .gamefield .statusbar {
+                font-size: large;
+            }
+            .gamefield .score {
+                float: right;
+            }
+            .gamefield .status {
+                float: right;
+            }
+            .gamefield table {
+                border-width: 0px;
+                border-collapse: separate;
+                border-spacing: 1px;
+            }
+            .gamefield tr {
+                padding: 0px;
+            }
+            .gamefield td {
+                width: 8px;
+                height: 8px;
+                background-color: green;
+                padding: 0px;
+                border-right: 1px;
+                border-bottom: 1px;
+            }
+        </style>
+        <script>
+            String.prototype.repeat = function(times){
+                var result="";
+                var pattern=this;
+                while (times > 0) {
+                    if (times&1)
+                        result+=pattern;
+                    times>>=1;
+                    pattern+=pattern;
+                }
+                return result;
+            };
+        </script>
+    </head>
+    <body>
+        <div class='gamefield'>
+        </div>
+        <script>
+            $('.gamefield').append("<span class='head'><\span>")
+            $('.gamefield .head').append('<span class="vs">' + game['players'][0] + ' vs ' + game['players'][1] + '<\/span>')
+            $('.gamefield .head').append('<span class="score"><\/span>')
+            $('.gamefield').append("<table><\/table>")
+            $('.gamefield table').append('<tr><\/tr>'.repeat(41))
+            $('.gamefield tr').append('<td><\/td>'.repeat(45))
+            $('.gamefield').append('<div class="statusbar"><\/div>')
+            $('.gamefield .statusbar').append('<span class="move">Текущий ход: <span class="cur">0<\/span><\/span>')
+            $('.gamefield .statusbar').append('<span class="status"><\/span>')
+            $('.gamefield').append('<div class="popup play" onclick="$(\'.gamefield .popup\').hide(); showgame();"><\/div>')
+            $('.gamefield .popup.play').html('<div class="inside"><a href="#" onclick="$(\'.gamefield .popup\').hide(); showgame();">Запустить<\/a><\/div>')
+            $('.gamefield').append('<div class="popup replay" onclick="$(\'.gamefield .popup\').hide(); initfield(); showgame();"><\/div>')
+            $('.gamefield .popup.replay').html('<div class="inside"><a href="#" onclick="$(\'.gamefield .popup\').hide(); initfield(); showgame();">Повтор<\/a><\/div>')
+            colors = ['black', 'red', 'green', 'yellow', 'blue', 'orange']
+            $('.gamefield .head .score').text(game['startscore'][0] + '-' + game['startscore'][1])
+            function initfield() {
+                cur = 0;
+                $('.gamefield .status').text('')
+                field = game['field']
+                tb = $('.gamefield table')[0]
+                for (var x = 0; x < 41; ++x) {
+                    for (var y = 0; y < 45; ++y) {
+                        $(tb.rows[x].cells[y]).css('background-color', colors[field[x][y]-1])
+                    }
+                }
+            }
+            function fill(x, y, oldcolor, color) {
+                if (color == oldcolor) {
+                    alert('Internal error');
+                }
+                if ($(tb.rows[x].cells[y]).css('background-color') != oldcolor) return;
+                $(tb.rows[x].cells[y]).css('background-color', color)
+                var dirs = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+                for (var dd = 0; dd < 4; ++dd) {
+                    var dx = dirs[dd][0];
+                    var dy = dirs[dd][1];
+                    var nx = x + dx;
+                    var ny = y + dy;
+                    if ((nx < 0) || (nx >= 41) || (ny < 0) || (ny >= 45)) continue;
+                    fill(nx, ny, oldcolor, color);
+                }
+            }
+            function makemove(move) {
+                if (move >= game['log'].length) return false;
+                $('.gamefield .move .cur').text(move+1);
+                $('.gamefield .head .score').text(game['log'][move][2][0] + '-' + game['log'][move][2][1]);
+                if (game['log'][move][0] == 'RE') {
+                    $('.gamefield .status').text('Player ' + (1 + move % 2) + ': Runtime error')
+                    return 0;
+                }
+                if (game['log'][move][0] == 'TL') {
+                    $('.gamefield .status').text('Player ' + (1 + move % 2) + ': Time limit')
+                    return 0;
+                }
+                if (game['log'][move][0] == 'PE') {
+                    $('.gamefield .status').text('Player ' + (1 + move % 2) + ': Presentation Error')
+                    return 0;
+                }
+                if (move % 2 == 0) {
+                    fill(0, 0, $(tb.rows[0].cells[0]).css('background-color'), colors[game['log'][move][1]-1])
+                } else {
+                    fill(40, 44, $(tb.rows[40].cells[44]).css('background-color'), colors[game['log'][move][1]-1])
+                }
+                return true;
+            }
+            cur = 0;
+            function showgame() {
+                setTimeout(function() {
+                    if (makemove(cur)) {
+                        cur += 1;
+                        showgame();
+                    } else {
+                        $('.gamefield .popup.replay').show()
+                    }
+                }, 1)
+            }
+            initfield()
+        </script>
+    </body>
+</html>
+{% endblock %}

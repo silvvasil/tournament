@@ -6,19 +6,23 @@ from functools import lru_cache
 import threading
 import json
 
+
 class ThreadWithResult(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, *, daemon=None):
         def function():
             self.result = target(*args, **kwargs)
+
+        self.result = -1
         super().__init__(group=group, target=function, name=name, daemon=daemon)
 
 
 def strategy_by_user(user):
     try:
         st = Strategy.objects.filter(user=user)
-        return st[len(st) - 1].main.name
-    except ValueError: 
-        return "strategies/no_strategy.cpp"
+        return str(st[len(st) - 1].main.name).split('.')[0]
+    except ValueError:
+        return "strategies/no_strategy"
+
 
 def all_users():
     return User.objects.all()
@@ -35,14 +39,15 @@ def replace_bitsstdcpph(filename):
         lines = f.read()
         # print(lines)
         f.close()
-        lines = lines.replace("#include <bits/stdc++.h>", "#include <iostream>\n#include <iomanip>\n#include <vector>\n#include <cmath>\n#include <algorithm>\n#include <string>\n#include <deque>\n#include <functional>\n#include <set>\n#include <map>\n#include <random>\n#include <memory>\n#include <cassert>\n#include <fstream>\n#include <unordered_map>\n#include <unordered_set>\n#include <bitset>\n#include <time.h>\n#include <stack>\n#include <queue>\n#include <complex>\n#include <chrono>\n")
+        lines = lines.replace("#include <bits/stdc++.h>",
+                              "#include <iostream>\n#include <iomanip>\n#include <vector>\n#include <cmath>\n#include <algorithm>\n#include <string>\n#include <deque>\n#include <functional>\n#include <set>\n#include <map>\n#include <random>\n#include <memory>\n#include <cassert>\n#include <fstream>\n#include <unordered_map>\n#include <unordered_set>\n#include <bitset>\n#include <time.h>\n#include <stack>\n#include <queue>\n#include <complex>\n#include <chrono>\n")
         f = open(filename, 'w')
         f.write(lines)
         f.close()
     except:
         f.close()
         pass
-    
+
 
 def compil(filename, filename_out):
     replace_bitsstdcpph(filename)
@@ -57,9 +62,13 @@ def compil(filename, filename_out):
 @lru_cache
 def versus(filename1, filename2, count=2):
     ans = [0, 0]
+
     for ind in range(count):
-        os.system(f"python3 interactor.py {filename1} {filename2}")
-        file = open("./visualizer/battlelog.js", "r").read()
+        log_filename = f'strategy/static/battlelogs/battlelog_{filename1.split("/")[-1]}_{filename2.split("/")[-1]}.js'
+        if not os.path.isfile(log_filename):
+            print("RUN", filename1, filename2)
+            os.system(f"python3 interactor.py {filename1} {filename2}")
+        file = open(log_filename, "r").read()
         obj = file[file.find("{"): file.rfind("}") + 1]
         h = json.loads(obj.replace("'", '"'))
         if ind % 2 == 0:
@@ -67,7 +76,7 @@ def versus(filename1, filename2, count=2):
         else:
             ans[2 - h["winner"]] += 1
         filename1, filename2 = filename2, filename1
-    
+
     if ans[0] == ans[1]:
         return 0.5
     return 1 - ans.index(max(ans))
@@ -91,17 +100,13 @@ def get_tournament(cnt_threads=5):
             # table[j][i] = 1 - result
 
     # for thread in threads:
-        # thread.join(2)
+    # thread.join(2)
     id = 0
     for i in range(n):
         for j in range(i + 1, n):
             table[i][j] = threads[id].result
             table[j][i] = 1 - threads[id].result
             id += 1
-    users = [""] * 2 + [str(i) + "  "  for i in range(len(table))] + ["sum"]
-    return [users] + sorted([[i] + [users_list()[i]] + table[i] + [sum(table[i])] for i in range(len(table))], key=lambda x: x[-1], reverse=True)
-
-
-
-# print(get_tournament("strategies"))
-# versus(compil("vasya_nextcol.cpp", "first"), compil("vasya_nextcol.cpp", "second"))
+    users = [""] * 2 + [str(i) + "  " for i in range(len(table))] + ["sum"]
+    return [users] + sorted([[i] + [users_list()[i]] + table[i] + [sum(table[i])] for i in range(len(table))],
+                            key=lambda x: x[-1], reverse=True)

@@ -5,10 +5,13 @@ from copy import deepcopy
 from random import randint
 from threading import Timer
 import sys
+import os
+from pathlib import Path
 
 sys.setrecursionlimit(10**6)
 
 PREFIX = './'
+
 
 class Solution:
     def __init__(self, cmd, timeout=2):
@@ -137,12 +140,17 @@ class Filya:
                 oldscorecnt = 0
             if oldscorecnt == 10:
                 break
+        print("PLAYER1", self.player1.sol.cmd[len(PREFIX):].split('/')[-1])
+        print("PLAYER2", self.player2.sol.cmd[len(PREFIX):].split('/')[-1])
+        # print("PLAYER2", self.player2.sol.cmd[len(PREFIX):])
+        # print(self.player2.sol.cmd[len(PREFIX):])
         res = {
             'winner': 1 if oldscore[0] > oldscore[1] else 2,
             'log': self.log,
             'field': self.startfield,
             'startscore': self.startscore,
-            'players': [self.player1.sol.cmd[len(PREFIX):], self.player2.sol.cmd[len(PREFIX):]]
+            'players': [self.player1.sol.cmd[len(PREFIX):].split('/')[1],
+                        self.player2.sol.cmd[len(PREFIX):].split('/')[1]]
         }
         if status != 'OK':
             res['winner'] = 3 - self.current
@@ -154,5 +162,8 @@ F = Filya(pl1, pl2)
 #print('\n'.join(' '.join(map(str, s)) for s in F.field)+'\n', file=sys.stderr)
 
 js = F.run()
-with open('visualizer/battlelog.js', 'w') as log:
+log_filename = f'strategy/static/battlelogs/battlelog_{pl1.split("/")[-1]}_{pl2.split("/")[-1]}.js'
+Path(log_filename).touch()
+with open(log_filename, 'w') as log:
     print('game =', js, file=log)
+

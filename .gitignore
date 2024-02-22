@@ -1,0 +1,8 @@
+tournament/.env
+.idea/*
+strategy/__pycache__/*
+authenticate/__pycache__/*
+tournament/__pycache__/*
+strategy/strategy/battlelogs/*
+compiled_strategies/*
+strategies/*
