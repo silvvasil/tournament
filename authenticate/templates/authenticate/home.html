@@ -1,0 +1,11 @@
+{% extends 'works/base.html' %}
+{% block content %}
+	<center>
+	<h1>Tournament</h1>
+    {% if user.is_authenticated %}
+    	
+	{% else %}
+		<p>Sign in to see results</p>
+	{% endif %}
+	</center>
+{% endblock %}

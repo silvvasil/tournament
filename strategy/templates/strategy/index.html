@@ -1,0 +1,18 @@
+{% extends 'authenticate/base.html' %}
+{% block content %}
+{% if user.is_authenticated %}  
+    <h1>Submit</h1>
+    <br/>
+    <label for="images" class="drop-container" id="dropcontainer">
+        <form action="" class="" method=POST  enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <br/>
+            <input type="submit" value="Submit" class="btn btn-secondary">
+        </form>
+    </label>
+    {% endif %}
+
+    
+    
+{% endblock %}
