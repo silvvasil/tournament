@@ -60,7 +60,7 @@ class Filya:
     def __init__(self, player1, player2):
         self.player1 = FilyaSolution(player1)
         self.player2 = FilyaSolution(player2)
-        #self.field = [[0]*45 for i in range(41)]
+        self.field = [[0]*45 for i in range(41)]
         self.gen()
         self.startfield = deepcopy(self.field)
         self.log = []
@@ -127,7 +127,7 @@ class Filya:
         while True:
             cont, status = self.proceed()
             score = self.score()
-            #self.log[-1].append(score)
+            self.log[-1].append(score)
             if not cont:
                 break
             if score == oldscore:
@@ -139,8 +139,8 @@ class Filya:
                 break
         res = {
             'winner': 1 if oldscore[0] > oldscore[1] else 2,
-            #'log': self.log,
-            #'field': self.startfield,
+            'log': self.log,
+            'field': self.startfield,
             'startscore': self.startscore,
             'players': [self.player1.sol.cmd[len(PREFIX):], self.player2.sol.cmd[len(PREFIX):]]
         }
