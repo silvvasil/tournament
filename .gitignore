@@ -6,3 +6,4 @@ tournament/__pycache__/*
 strategy/strategy/battlelogs/*
 compiled_strategies/*
 strategies/*
+__pycache__/*
