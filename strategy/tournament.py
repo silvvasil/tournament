@@ -44,8 +44,7 @@ def replace_bitsstdcpph(filename):
         f = open(filename, 'w')
         f.write(lines)
         f.close()
-    except:
-        f.close()
+    except ValueError:
         pass
 
 
@@ -61,6 +60,7 @@ def compil(filename, filename_out):
 
 @lru_cache
 def versus(filename1, filename2, count=2):
+    print("Versus ", filename1, filename2, count)
     ans = [0, 0]
 
     for ind in range(count):
@@ -86,7 +86,7 @@ def get_tournament(cnt_threads=5):
     threads = []
     players = all_users()
     # print('\n'.join(users_list()))
-    strats = ["compiled_" + strategy_by_user(user).split('.')[0] for user in players]
+    strats = ["compiled_" + strategy_by_user(user) for user in players]
     # print('\n'.join(strats))
     n = len(players)
     table = [[0] * n for _ in range(n)]

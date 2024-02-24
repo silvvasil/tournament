@@ -140,8 +140,8 @@ class Filya:
                 oldscorecnt = 0
             if oldscorecnt == 10:
                 break
-        print("PLAYER1", self.player1.sol.cmd[len(PREFIX):].split('/')[-1])
-        print("PLAYER2", self.player2.sol.cmd[len(PREFIX):].split('/')[-1])
+        print("PLAYER1", self.player1.sol.cmd[len(PREFIX):].split('/')[-1].split('_')[0])
+        print("PLAYER2", self.player2.sol.cmd[len(PREFIX):].split('/')[-1].split('_')[0])
         # print("PLAYER2", self.player2.sol.cmd[len(PREFIX):])
         # print(self.player2.sol.cmd[len(PREFIX):])
         res = {
@@ -149,8 +149,8 @@ class Filya:
             'log': self.log,
             'field': self.startfield,
             'startscore': self.startscore,
-            'players': [self.player1.sol.cmd[len(PREFIX):].split('/')[1],
-                        self.player2.sol.cmd[len(PREFIX):].split('/')[1]]
+            'players': [self.player1.sol.cmd[len(PREFIX):].split('/')[1].split('_')[0],
+                        self.player2.sol.cmd[len(PREFIX):].split('/')[1].split('_')[0]]
         }
         if status != 'OK':
             res['winner'] = 3 - self.current
@@ -158,10 +158,13 @@ class Filya:
 
 
 pl1, pl2 = sys.argv[1:3]
+# pl1 = pl1
+# pl2 = pl2
 F = Filya(pl1, pl2)
 #print('\n'.join(' '.join(map(str, s)) for s in F.field)+'\n', file=sys.stderr)
 
 js = F.run()
+print("Interact ", pl1, pl2)
 log_filename = f'strategy/static/battlelogs/battlelog_{pl1.split("/")[-1]}_{pl2.split("/")[-1]}.js'
 Path(log_filename).touch()
 with open(log_filename, 'w') as log:

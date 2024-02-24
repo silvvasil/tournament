@@ -27,7 +27,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "10.7.115.95", "192.168.1.197"]
+ALLOWED_HOSTS = ["127.0.0.1", "10.7.115.95", "192.168.1.197", "192.168.100.115"]
 
 
 # Application definition
